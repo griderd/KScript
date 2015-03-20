@@ -27,7 +27,7 @@ namespace KScript.Assembler
             "unsigned",
             "byte",
             "short",
-            "int",
+            "word",
             "long",
             "float",
             "double",
@@ -145,7 +145,7 @@ namespace KScript.Assembler
 
         private void AddVariable()
         {
-            string[] signedTypes = new string[] { "short", "int", "long" };
+            string[] signedTypes = new string[] { "short", "word", "long" };
             string[] unsignedTypes = new string[] { "byte" };
             string[] defaultTypes = new string[] { "float", "double", "string" };
 
@@ -593,7 +593,7 @@ namespace KScript.Assembler
 
         protected override void Postprocess()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

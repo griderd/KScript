@@ -207,6 +207,11 @@ namespace KScript.Assembler
                         AddRegister();
                         break;
 
+                    case "wmeml":
+                        AddSymbolOrAddress();
+                        AddLiteral();
+                        break;
+
                     case "rmemr":
                     case "wmemr":
                     case "wvmemr":

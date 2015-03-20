@@ -18,7 +18,7 @@ namespace KScript.Interrupts
         DeviceDetached,
         ButtonDown,
         ButtonUp,
-        ButtonStateChanged,
+        ButtonStateChanged
     }
 
     public class HardwareInterruptEventArgs : EventArgs

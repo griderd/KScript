@@ -274,7 +274,7 @@ namespace KScript.Hardware
                 case Instructions.mov:
                 case Instructions.movp:
                 case Instructions.rmem:
-                case Instructions.wmem:
+                case Instructions.wmeml:
                 case Instructions.rmemr:
                 case Instructions.wmemr:
                 case Instructions.wvmemr:
@@ -486,7 +486,7 @@ namespace KScript.Hardware
                     this[arg1 - 1] = ((RAM)systemBoard[IOPorts.RAM]).ReadWord(arg2);
                     break;
 
-                case Instructions.wmem:
+                case Instructions.wmeml:
                     ((RAM)systemBoard[IOPorts.RAM]).WriteWord(arg1, this[arg2 - 1]);
                     break;
 

@@ -206,9 +206,13 @@ namespace KScript.Hardware
         /// </summary>
         rmem,
         /// <summary>
-        /// Writes a literal to memory: wmem [symbol|address] [literal]
+        /// Writes a value to memory from a register [symbol|address] [register]
         /// </summary>
         wmem,
+        /// <summary>
+        /// Writes a literal to memory: wmem [symbol|address] [literal]
+        /// </summary>
+        wmeml,
         /// <summary>
         /// Reads the memory at an address stored in a register and writes the value to a register: rmemr [destRegister] [addressRegister]
         /// </summary>
