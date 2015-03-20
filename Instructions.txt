@@ -1,0 +1,55 @@
+Instructions
+
+DEC		HEX		Instruction		Usage											Description
+0		00		null			Not Applicable.									Represents a null value or signal. Cannot be used in code.
+1		01		rega			[instruction] a									Represents general register A.
+2		02		regb			[instruction] b									Represents general register B.
+3		03		regc			[instruction] c									Represents general register C.
+4		04		regd			[instruction] d									Represents general register D.
+5		05		regg			Not Applicable.									Represents reserved register G. Cannot be used in code.
+6		06		regh			Not Applicable.									Represents reserved register H.	Cannot be used in code.
+7		07		rege			[instruction] e									Represents floating point register E.
+8		08		regf			[instruction] f									Represents floating point register F.
+9		09		pushi			pushi [literal]									Pushes the literal value onto the ALU stack
+10		0A		popi			popi [register]									Pops the top value from the ALU stack and stores it in the given register.
+11		0B		peeki			peeki [register]								Peeks the top value from the ALU stack and stores it in the given register.
+12		0C		pushr			pushr [register]								Pushes the value stored in the register onto the ALU stack.
+13		0D		add				add												Adds the top two values from the ALU stack together and pushes the result.
+14		0E		sub				sub												Subtracts the top value of the ALU stack from the second value and pushes the result.
+15		0F		mult			mult											Multiplies the top two values from the ALU stack and pushes the result.
+16		10		div				div												Divides the second ALU stack value by the top ALU stack value and pushes the result.
+17		11		mod				mod												Divides the second ALU stack value by the top ALU stack value and pushes the remainder.
+18		12		and				and												Performs bitwise AND on the top two values from the ALU stack and pushes the result.
+19		13		or				or												Performs bitwise OR on the top two values from the ALU stack and pushes the result.
+20		14		not				not												Performs bitwise NOT on the top value from the ALU stack and pushes the result.
+21		15		xor				xor												Performs bitwise XOR on the top two values from the ALU stack and pushes the result.
+22		16		neg				neg												Performs a sign inversion (multiplies by negative one) on the top value from the ALU stack and pushes the result.
+23		17		lsh				lsh												Performs an arithmetic left bitshift of the second value on the ALU stack by the top value and pushes the result.
+24		18		rsh				rsh												Performs an arithmetic right bitshift of the second value on the ALU stack by the top value and pushes the result.	
+25		19		equal			equal											Performs an equivilency check of the top two values and pushes 1 for true, 0 for false.
+26		1A		nequal			nequal											Performs a non-equivilency check of the top two values and pushes 1 for true, 0 for false.
+27		1B		great			great											Checks if the second value on the ALU stack is greater than the top. Pushes 1 for true, 0 for false.
+28		1C		gequal			gequal											Checks if the second value on the ALU stack is greater or equal to the top value. Pushes 1 for true, 0 for false.
+29		1D		less			less											Checks if the second value on the ALU stack is less than the top value. Pushes 1 for true, 0 for false.
+30		1E		lequal			lequal											Checks if the second value on the ALU stack is less than or equal to the top value. Pushes 1 for true, 0 for false.
+31		1F		jtrue			jtrue [label|address]							Jumps to the given location if the value at the top of the ALU stack is non-zero (true). This also pushes a return address onto the call stack.
+32		20		jfalse			jfalse [label|address]							Jumps to the given location if the value at the top of the ALU stack is zero (false). This also pushes a return address onto the call stack.
+33		21		jmp				jmp [label|address]								Jumps to the given location. This also pushes a return address onto the call stack.
+34		22		goto			goto [label|address]							Goes to the given location. This DOES NOT leave a return address.
+35		23		gototrue		gototrue [label|address]						Goes to the given location if the value at the top of the ALU stack is non-zero (true). This DOES NOT leave a return address.
+36		24		gotofalse		gotofalse [label|address]						Goes to the given location if the value at the top of the ALU stack is zero (false). This DOES NOT leave a return address.
+37		25		ret				ret												Returns to the location at the top of the call stack.
+38		26		outp			outp [portID]									Sends the content of register A to the serial port with the given ID.
+39		27		inp				inp [portID]									Reads the content of the serial port with the given ID to register A.
+40		28		mov				mov [register] [literal]						Moves the literal value into the register.
+41		29		movr			movr [destRegister] [srcRegister]				Moves the content of the source register into the destination register.
+42		2A		push			push [register]									Pushes the content of the given register onto the stack.
+43		2B		pop				pop [register]									Pops the top value from the stack and stores it in the given register.
+44		2C		pusha			pusha											Pushes all of the registers onto the stack.
+45		2D		popa			popa											Restores all of the registers from the stack.
+46		2E		rmem			rmem [destRegister] [symbol|address]			Reads memory at the given location and stores the content in the given register.
+47		2F		wmem			wmem [symbol|address] [srcRegister]				Writes the contents of the given register at the given location in memory.
+48		30		rmemr			rmemr [destRegister] [addressRegister]			Reads memory at the location referenced in the source register and stores the content in the destination register.
+49		31		wmemr			wmemr [addressRegister] [srcRegister]			Writes memory at the location referenced in the destination register and stores the content of the source register.
+50		32		inthnd			inthnd [symbol|address]							Sets the Interrupt Address register.
+51		33		hlt				hlt												Halts the CPU. 
