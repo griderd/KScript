@@ -18,6 +18,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualMachine", "VirtualMa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroLibrary", "MicroLibrary\MicroLibrary.csproj", "{E0D489FB-6632-4175-90E7-E6ACF15C5440}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compilers", "Compilers", "{E410D851-0897-4984-98FF-70F693B25D71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembler", "Assembler\Assembler.csproj", "{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compiler", "Compiler\Compiler.csproj", "{B490C53A-0466-400E-9293-1CDA2D5E2707}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -68,8 +74,32 @@ Global
 		{E0D489FB-6632-4175-90E7-E6ACF15C5440}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{E0D489FB-6632-4175-90E7-E6ACF15C5440}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E0D489FB-6632-4175-90E7-E6ACF15C5440}.Release|x86.ActiveCfg = Release|Any CPU
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Debug|x86.ActiveCfg = Debug|x86
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Debug|x86.Build.0 = Debug|x86
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Release|Any CPU.ActiveCfg = Release|x86
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Release|Mixed Platforms.Build.0 = Release|x86
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Release|x86.ActiveCfg = Release|x86
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800}.Release|x86.Build.0 = Release|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Debug|x86.ActiveCfg = Debug|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Debug|x86.Build.0 = Debug|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Release|Any CPU.ActiveCfg = Release|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Release|Mixed Platforms.Build.0 = Release|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Release|x86.ActiveCfg = Release|x86
+		{B490C53A-0466-400E-9293-1CDA2D5E2707}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C737C0EA-F4EC-4517-AB6E-5B86E3CA7800} = {E410D851-0897-4984-98FF-70F693B25D71}
+		{B490C53A-0466-400E-9293-1CDA2D5E2707} = {E410D851-0897-4984-98FF-70F693B25D71}
 	EndGlobalSection
 EndGlobal

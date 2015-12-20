@@ -17,11 +17,14 @@ H
 STATIC PORT NUMBERS
 ----------------------------------------------------------------
 PORT(HEX)		PORT(DEC)		DEVICE
-0x00			0				CPU	
-0x01			1				ALU
+0x00			0				System Board	
+0x01			1				BIOS
 0x02			2				RAM
-0x03			3				BIOS
-0x04			4				DISK1
-0x05			5				SOUND
-0x06			6				VRAM
-0x07			7				GPU
+0x03			3				CPU
+0x04			4				ALU
+0x05			5				FPU
+0x06			6				Video
+0x07			7				Disk1
+0x08			8				Disk2
+0x09			9				Sound
+0x0A			10				Keyboard

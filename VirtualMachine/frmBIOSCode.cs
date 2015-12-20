@@ -23,6 +23,13 @@ namespace VirtualMachine
             lstErrors.Items.Clear();
             lstWarnings.Items.Clear();
 
+            if ((BIOS.Errors == null) | (BIOS.Warnings == null))
+            {
+                lstErrors.Items.Add("Source code not assembled.");
+                lstWarnings.Items.Add("Source code not assembled.");
+                return;
+            }
+
             foreach (string error in BIOS.Errors)
             {
                 lstErrors.Items.Add(error);

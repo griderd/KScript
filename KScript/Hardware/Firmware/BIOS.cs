@@ -7,10 +7,30 @@ namespace KScript.Hardware.Firmware
 {
     public class BIOS
     {
+        internal static string TestProg = @"
+word port 6
+byte value 65
+
+main:
+	jmp output
+
+input:
+	rmem b port
+	inr
+	push a
+	ret
+	
+output:
+	rmem b port
+	rmem a value
+	outr
+	ret
+";
+
         internal static string POST = @"; POST
 #define string unsigned byte array
 #define IO.CPU 3
-#define IO.Video 7
+#define IO.Video 6
 #define IO.Sound 9
 
 ; unsigned byte array helloworld ""Hello World!\0""

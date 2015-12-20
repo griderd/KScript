@@ -7,7 +7,7 @@ using KScript.Compilers.LanguageObjects;
 
 namespace KScript.Compilers.IL
 {
-    class ILCompiler : Compiler
+    public partial class ILCompiler : Compiler
     {
         enum BlockTypes
         {
@@ -20,20 +20,26 @@ namespace KScript.Compilers.IL
         }
 
         Stack<BlockTypes> blocks;
-        Stack<List<string>> variableScope;
+        Stack<Dictionary<string, string>> variableScope;
         List<Function> functions;
 
         Dictionary<string, string> types;
         string[] keywords = new string[] 
         {
             "byte", "sbyte", "short", "ushort", "int", "uint", "long", "ulong", "float", "double", "string",
-            "function", "endfunction", "if", "else", "endif", "while", "do"
+            "function", "endfunction", "if", "else", "endif", "while", "do", "endif", "endloop", "proto", "returns",
+            "return", "void", "null", "asm", "endasm"
         };
 
-        public ILCompiler(FileInfo[] files, DirectoryInfo rootPath, DirectoryInfo outputPath, FileInfo outputFile, DirectoryInfo libraryPath)
-            : base(files, rootPath, outputPath, outputFile, libraryPath, 
+        public ILCompiler(FileInfo[] files, DirectoryInfo libraryPath)
+            : base(files, libraryPath, 
                 new TokenizerOptions(true, new char[] { ';', '+', '-', '*', '/', '%', '.', ',', '{', '}', '(', ')', '<', '>', '=', '!'},
                                            new string[] { "++", "--", ">=", "<=", "!=", "==" } ), PreprocessorOptions.IncludeInsert)
+        {
+            
+        }
+
+        protected override void Precompile()
         {
             types = new Dictionary<string, string>();
             types.Add("byte", "byte");
@@ -49,10 +55,10 @@ namespace KScript.Compilers.IL
             types.Add("string", "string");
 
             blocks = new Stack<BlockTypes>();
-            blocks.Push(BlockTypes.Global);
-            variableScope = new Stack<List<string>>();
-            variableScope.Push(new List<string>());
+            variableScope = new Stack<Dictionary<string, string>>();
             functions = new List<Function>();
+
+            StartScope(BlockTypes.Global);
         }
 
         protected override void Compile()
@@ -93,6 +99,9 @@ namespace KScript.Compilers.IL
                         }
 
                         EndScope();
+                        break;
+
+                    case "asm":
                         break;
 
                     case "if":
@@ -145,14 +154,24 @@ namespace KScript.Compilers.IL
                         }
                         else if (blocks.Peek() == BlockTypes.Global)
                         {
-                            StartScope();
+                            StartScope(BlockTypes.WhileLoop);
                             // TODO: Parse WHILE conditional
                         }
                         break;
+
+                    case "return":
+                        ParseExpression(false);
+                        AddAsm("ret");
+                        break;
+
                 }
             }
         }
 
+        /// <summary>
+        /// Parses a function header. This is called when the previous token was "function".
+        /// </summary>
+        /// <returns>Returns true on success (no errors). Otherwise, returns false.</returns>
         private bool ParseFunction()
         {
             string functionName;
@@ -167,7 +186,7 @@ namespace KScript.Compilers.IL
 
             functionName = CurrentToken.Value;
 
-            assemblyCodeFile.Add(functionName + ":");
+            AddAsm(functionName + ":");
             if (!ParseParameterList(out parameterList))
                 return false;
 
@@ -195,7 +214,7 @@ namespace KScript.Compilers.IL
 
             returnType = CurrentToken.Value;
 
-            functions.Add(new Function(functionName, parameterList, returnType));
+            functions.Add(new Function(functionName, parameterList, returnType, types));
             StartScope(BlockTypes.Function);
             
             return true;
@@ -224,6 +243,10 @@ namespace KScript.Compilers.IL
                 {
                     Error("Expected parameter type.");
                     return false;
+                }
+                else if (CurrentToken.Value == ")")
+                {
+                    return true;
                 }
                 else if (!IsValidType())
                 {
@@ -269,7 +292,7 @@ namespace KScript.Compilers.IL
 
         private void StartScope(BlockTypes block)
         {
-            variableScope.Push(new List<string>());
+            variableScope.Push(new Dictionary<string, string>());
             blocks.Push(block);
         }
 
@@ -281,19 +304,10 @@ namespace KScript.Compilers.IL
 
         private bool AddToScope(string variable)
         {
-            if (variableScope.Peek().Contains(variable))
+            if (variableScope.Peek().ContainsKey(variable))
                 return false;
-            variableScope.Peek().Add(variable);
+            variableScope.Peek().Add(variable, GenerateUniqueVariableName(variable));
             return true;
-        }
-
-        private bool HasVariable(string variable)
-        {
-            foreach (List<string> scope in variableScope)
-            {
-                if (scope.Contains(variable)) return true;
-            }
-            return false;
         }
 
         private bool IsKeyword(string value)
@@ -318,12 +332,19 @@ namespace KScript.Compilers.IL
 
         protected override void Preprocess()
         {
-            throw new NotImplementedException();
+            // TODO: Implement preprocessor.
+            //throw new NotImplementedException();
         }
 
         protected override void Postprocess()
         {
-            throw new NotImplementedException();
+            // TODO: Implement postprocessor
+            //throw new NotImplementedException();
+        }
+
+        void AddAsm(string asm)
+        {
+            assemblyCode.Add(string.Format("{0}{1}", new string('\t', blocks.Count - 1), asm));
         }
     }
 }

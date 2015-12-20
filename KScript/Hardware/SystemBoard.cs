@@ -5,6 +5,9 @@ using System.Text;
 
 namespace KScript.Hardware
 {
+    /// <summary>
+    /// Fixed I/O port list.
+    /// </summary>
     public enum IOPorts : byte
     {
         SystemBoard = 0x00,
@@ -13,13 +16,16 @@ namespace KScript.Hardware
         CPU = 0x03,
         ALU = 0x04,
         FPU = 0x05,
-        Video = 0x07,
-        Disk1 = 0x06,
-        Disk2 = 0x07,
+        Video = 0x06,
+        Disk1 = 0x07,
+        Disk2 = 0x08,
         Sound = 0x09,
         Keyboard = 0x0A
     }
 
+    /// <summary>
+    /// System board status flags.
+    /// </summary>
     [Flags]
     public enum SystemBoardState : int
     {
@@ -43,15 +49,37 @@ namespace KScript.Hardware
 
     public class SystemBoard : Hardware
     {
+        #region Fields
+        /// <summary>
+        /// Currently installed Hardware objects.
+        /// </summary>
         Hardware[] hardware;
+
         Storage BIOS;
         CPU cpu;
         ALU alu;
         RAM ram;
+
+        /// <summary>
+        /// The graphics adapter. 
+        /// TODO: Allow user to change GraphicsAdapter type.
+        /// </summary>
         GraphicsAdapters.MonochromeDisplayAdapter mda;
 
+        #endregion 
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the current state of the system board.
+        /// </summary>
         public SystemBoardState State { get; private set; }
 
+        /// <summary>
+        /// Gets the hardware at the given port.
+        /// </summary>
+        /// <param name="port">I/O Port identifier.</param>
+        /// <returns>Returns the Hardware object if the hardware is installed. If no hardware exists on the specified port, returns null.</returns>
         public Hardware this[IOPorts port]
         {
             get
@@ -60,14 +88,25 @@ namespace KScript.Hardware
             }
         }
 
+        /// <summary>
+        /// Gets the hardware at the given port.
+        /// </summary>
+        /// <param name="port">I/O port identifier. Must be a value between 0 and 255.</param>
+        /// <returns>Returns the Hardware object if the hardware is installed. If no hardware exists on the specified port, returns null.</returns>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the index is less than 0 or greater than 255.</exception>
         public Hardware this[int port]
         {
             get
             {
+                if ((port < 0) | (port > 255))
+                    throw new IndexOutOfRangeException("Port numbers range between 0 and 255.");
                 return hardware[port];
             }
         }
 
+        /// <summary>
+        /// Gets a list of all hardware currently installed.
+        /// </summary>
         public HardwareInfo[] HardwareTable
         {
             get
@@ -84,6 +123,17 @@ namespace KScript.Hardware
             }
         }
 
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Creates a new SystemBoard instance.
+        /// </summary>
+        /// <param name="mode">The mode the CPU should start in.</param>
+        /// <param name="cpuFrequency">The CPU's clock frequency.</param>
+        /// <param name="memorySize">The size of the RAM in bytes.</param>
+        /// <remarks>If the CPU mode is set to CPU.Debug, the RAM size is limited to 64 kilobytes.</remarks>
         public SystemBoard(CPUMode mode, double cpuFrequency, int memorySize)
             : base(HardwareType.SystemBoard)
         {
@@ -107,20 +157,32 @@ namespace KScript.Hardware
 
         }
 
+        #endregion
+
+        /// <summary>
+        /// Steps the CPU through the next instruction.
+        /// </summary>
         public void StepCPU()
         {
             cpu.Step();
         }
 
+        /// <summary>
+        /// Initializes the attached hardware, assembles the POST software from code,
+        /// loads the resulting machine code into memory, and starts the CPU.
+        /// </summary>
         protected override void _Start()
         {
+            // Start hardware devices
             foreach (Hardware device in hardware)
             {
-                if ((device != null) & (device != this)) device.Start();
-
+                if ((device != null) & (device != this)) 
+                    device.Start();
             }
 
+            // Assemble POST
             Assembler.Assemble asm = new Assembler.Assemble(Firmware.BIOS.POST, "POST");
+
 
             State = (SystemBoardState)0xF;
             if (this[IOPorts.BIOS] != null) State ^= SystemBoardState.NoBIOS;

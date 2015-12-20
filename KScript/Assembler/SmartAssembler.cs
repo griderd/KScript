@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 namespace KScript.Assembler
 {
     /// <summary>
-    /// Represents a dual-pass assembler. The first pass translates the code into "classical" assembly, which is then assembled normally.
+    /// Represents a dual-pass assembler. The first pass translates the code into "classic" assembly, which is then assembled normally.
     /// </summary>
     public class SmartAssembler : Compiler
     {
@@ -37,10 +37,15 @@ namespace KScript.Assembler
 
         string[] registers = new string[] { "a", "b", "c", "d", "e", "f" };
 
-        public SmartAssembler(FileInfo[] files, DirectoryInfo rootPath, DirectoryInfo outputPath, FileInfo outputFile, DirectoryInfo stdlibPath)
-            : base(files, rootPath, outputPath, outputFile, stdlibPath,
+        public SmartAssembler(FileInfo[] files, DirectoryInfo stdlibPath)
+            : base(files, stdlibPath,
               new TokenizerOptions(true,
                   new char[] { ',', '{', '}', '[', ']', '\n' }, new string[0]), PreprocessorOptions.IncludeAppend)
+        {
+            
+        }
+
+        protected override void Precompile()
         {
             macros = new Dictionary<string, string>();
             symbols = new Dictionary<string, bool>();
@@ -53,42 +58,46 @@ namespace KScript.Assembler
 
         protected override void Preprocess()
         {
-            for (int i = 0; i < code.Lines.Length; i++)
+            for (int j = 0; j < code.Files.Length; j++)
             {
-                string line = code.Lines[i].Trim();
-
-                if (!line.StartsWith("#")) continue;
-
-                string[] parts = line.Split(' ');
-
-                switch (parts[0])
+                SourceFile file = code.Files[j];
+                for (int i = 0; i < file.Lines.Length; i++)
                 {
-                    case "#include":
-                        if ((parts.Length < 2) || (parts[1] == ""))
-                        {
-                            PreprocessorError("#INCLUDE directive requires filename.");
-                            continue;
-                        }
+                    string line = file.Lines[i].Trim();
 
-                        IncludeFile(parts[1], false);
-                        break;
+                    if (!line.StartsWith("#")) continue;
 
-                    case "#define":
-                        if ((parts.Length < 2) || (parts[1] == ""))
-                        {
-                            PreprocessorError("#DEFINE directive requires a token.");
-                            continue;
-                        }
+                    string[] parts = line.Split(' ');
 
-                        string replacementString = "";
-                        if (parts.Length > 2) replacementString = line.Substring(parts[1].Length + 9, line.Length - (parts.Length + 9));
+                    switch (parts[0])
+                    {
+                        case "#include":
+                            if ((parts.Length < 2) || (parts[1] == ""))
+                            {
+                                PreprocessorError("#INCLUDE directive requires filename.");
+                                continue;
+                            }
 
-                        macros.Add(parts[1], replacementString);
-                        break;
+                            IncludeFile(parts[1], false);
+                            break;
+
+                        case "#define":
+                            if ((parts.Length < 2) || (parts[1] == ""))
+                            {
+                                PreprocessorError("#DEFINE directive requires a token.");
+                                continue;
+                            }
+
+                            string replacementString = "";
+                            if (parts.Length > 2) replacementString = line.Substring(parts[1].Length + 9, line.Length - (parts.Length + 9));
+
+                            macros.Add(parts[1], replacementString);
+                            break;
+                    }
+
+                    file.RemoveLine(i);
+                    i--;
                 }
-
-                code.RemoveLine(i);
-                i--;
             }
         }
 
@@ -139,7 +148,7 @@ namespace KScript.Assembler
             else
             {
                 symbols.Add(labelName, true);
-                assemblyCodeFile.Add(labelName + ':');
+                assemblyCode.Add(labelName + ':');
             }
         }
 
@@ -305,7 +314,7 @@ namespace KScript.Assembler
 
                 while (GetNextToken() && CurrentToken.Value != "}")
                 {
-                    if (CurrentToken == ";")
+                    if (CurrentToken.Value == ";")
                     {
                         Error("'}' expected.");
                         return;
@@ -386,7 +395,7 @@ namespace KScript.Assembler
             line.Append(' ');
             line.Append(value.ToString());
 
-            assemblyCodeFile.Add(line.ToString());
+            assemblyCode.Add(line.ToString());
             symbols.Add(name, constant);
         }
 
@@ -396,14 +405,14 @@ namespace KScript.Assembler
             {
                 case "popi":
                     if ((!GetNextToken()) || (CurrentToken.Value == "\n"))
-                        assemblyCodeFile.Add("popx");
+                        assemblyCode.Add("popx");
                     else if (!IsRegister())
                     {
                         Error("Expected register or EOL.");
                         return;
                     }
                     else
-                        assemblyCodeFile.Add("popi " + CurrentToken.Value);
+                        assemblyCode.Add("popi " + CurrentToken.Value);
                     break;
 
                 case "jmp":
@@ -414,11 +423,11 @@ namespace KScript.Assembler
                     }
                     else if (IsRegister())
                     {
-                        assemblyCodeFile.Add("jmpr " + CurrentToken.Value);
+                        assemblyCode.Add("jmpr " + CurrentToken.Value);
                     }
                     else
                     {
-                        assemblyCodeFile.Add("jmp " + CurrentToken.Value);
+                        assemblyCode.Add("jmp " + CurrentToken.Value);
                     }
                     break;
 
@@ -430,11 +439,11 @@ namespace KScript.Assembler
                     }
                     else if (IsRegister())
                     {
-                        assemblyCodeFile.Add("jtruer " + CurrentToken.Value);
+                        assemblyCode.Add("jtruer " + CurrentToken.Value);
                     }
                     else
                     {
-                        assemblyCodeFile.Add("jtrue " + CurrentToken.Value);
+                        assemblyCode.Add("jtrue " + CurrentToken.Value);
                     }
                     break;
 
@@ -446,11 +455,11 @@ namespace KScript.Assembler
                     }
                     else if (IsRegister())
                     {
-                        assemblyCodeFile.Add("jfalser " + CurrentToken.Value);
+                        assemblyCode.Add("jfalser " + CurrentToken.Value);
                     }
                     else
                     {
-                        assemblyCodeFile.Add("jfalse " + CurrentToken.Value);
+                        assemblyCode.Add("jfalse " + CurrentToken.Value);
                     }
                     break;
 
@@ -462,11 +471,11 @@ namespace KScript.Assembler
                     }
                     else if (IsRegister())
                     {
-                        assemblyCodeFile.Add("gotor " + CurrentToken.Value);
+                        assemblyCode.Add("gotor " + CurrentToken.Value);
                     }
                     else
                     {
-                        assemblyCodeFile.Add("goto " + CurrentToken.Value);
+                        assemblyCode.Add("goto " + CurrentToken.Value);
                     }
                     break;
 
@@ -478,11 +487,11 @@ namespace KScript.Assembler
                     }
                     else if (IsRegister())
                     {
-                        assemblyCodeFile.Add("gototruer " + CurrentToken.Value);
+                        assemblyCode.Add("gototruer " + CurrentToken.Value);
                     }
                     else
                     {
-                        assemblyCodeFile.Add("gototrue " + CurrentToken.Value);
+                        assemblyCode.Add("gototrue " + CurrentToken.Value);
                     }
                     break;
 
@@ -494,24 +503,24 @@ namespace KScript.Assembler
                     }
                     else if (IsRegister())
                     {
-                        assemblyCodeFile.Add("gotofalser " + CurrentToken.Value);
+                        assemblyCode.Add("gotofalser " + CurrentToken.Value);
                     }
                     else
                     {
-                        assemblyCodeFile.Add("gotofalse " + CurrentToken.Value);
+                        assemblyCode.Add("gotofalse " + CurrentToken.Value);
                     }
                     break;
 
                 case "pop":
                     if ((!GetNextToken()) || (CurrentToken.Value == "\n"))
-                        assemblyCodeFile.Add("poprx");
+                        assemblyCode.Add("poprx");
                     else if (!IsRegister())
                     {
                         Error("Expected register or EOL.");
                         return;
                     }
                     else
-                        assemblyCodeFile.Add("pop " + CurrentToken.Value);
+                        assemblyCode.Add("pop " + CurrentToken.Value);
                     break;
 
                 case "mov":
@@ -540,15 +549,15 @@ namespace KScript.Assembler
                         }
                         else if (IsRegister())
                         {
-                            assemblyCodeFile.Add(string.Format("movr {0} {1}", arg1, CurrentToken.Value));
+                            assemblyCode.Add(string.Format("movr {0} {1}", arg1, CurrentToken.Value));
                         }
                         else if (IsLiteral())
                         {
-                            assemblyCodeFile.Add(string.Format("mov {0} {1}", arg1, CurrentToken.Value));
+                            assemblyCode.Add(string.Format("mov {0} {1}", arg1, CurrentToken.Value));
                         }
                         else
                         {
-                            assemblyCodeFile.Add(string.Format("movp {0} {1}", arg1, CurrentToken.Value));
+                            assemblyCode.Add(string.Format("movp {0} {1}", arg1, CurrentToken.Value));
                         }
                     }
                     break;
@@ -579,11 +588,11 @@ namespace KScript.Assembler
                         }
                         else if (IsRegister())
                         {
-                            assemblyCodeFile.Add(string.Format("rmemr {0} {1}", arg1, CurrentToken.Value));
+                            assemblyCode.Add(string.Format("rmemr {0} {1}", arg1, CurrentToken.Value));
                         }
                         else
                         {
-                            assemblyCodeFile.Add(string.Format("rmem {0} {1}", arg1, CurrentToken.Value));
+                            assemblyCode.Add(string.Format("rmem {0} {1}", arg1, CurrentToken.Value));
                         }
                     }
                     break;

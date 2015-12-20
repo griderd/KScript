@@ -22,43 +22,42 @@ namespace KScript.Compilers
 
     public abstract class Compiler
     {
-        Tokenizer tokenizer;
         TokenizerOptions options;
-        DirectoryInfo rootPath, outputPath, stdLibPath;
-        FileInfo outputFile;
+        DirectoryInfo stdLibPath;
+        protected SourceFileCollection code;
 
-        protected RawCode code;
+        protected List<string> errors;
+        protected List<string> warnings;
 
-        List<string> errors;
-        List<string> warnings;
+        protected List<string> assemblyCode;
+        protected List<byte> byteCode;
 
-        List<string> assemblyCode;
-        List<byte> byteCode;
+        public string[] Errors { get { return errors.ToArray(); } }
+        public string[] Warnings { get { return warnings.ToArray(); } }
 
-        protected List<string> assemblyCodeFile;
+        public string[] AssemblyCode { get { return assemblyCode.ToArray(); } }
+        public byte[] ByteCode { get { return byteCode.ToArray(); } }
 
-        protected DebugInfoCollection tokens;
         int tokenIndex;
 
-        protected DebugInfoItem CurrentToken 
+        protected Token CurrentToken 
         { 
             get 
             {
                 if (tokenIndex >= 0)
-                    return tokens[tokenIndex];
-                else if (tokens.Count > 0)
-                    return tokens.Last();
+                    return code.Tokens[tokenIndex];
+                else if (code.Tokens.Length > 0)
+                    return code.Tokens.Last();
                 else
-                    return new DebugInfoItem("", "Unknown", 0);
+                    return new Token("", 0, "Unknown");
             } 
         }
 
         PreprocessorOptions preprocessorOptions;
 
-        public Compiler(FileInfo[] files, DirectoryInfo rootPath, DirectoryInfo outputPath, FileInfo outputFile, DirectoryInfo stdlibPath, TokenizerOptions tokenOptions, PreprocessorOptions flags)
+        public Compiler(FileInfo[] files, DirectoryInfo stdlibPath, TokenizerOptions tokenOptions, PreprocessorOptions flags)
         {
-            if ((files == null) | (rootPath == null) | (outputPath == null) | 
-                (outputFile == null) | (stdlibPath == null))
+            if ((files == null) | (stdlibPath == null))
             {
                 throw new ArgumentNullException();
             }
@@ -70,22 +69,20 @@ namespace KScript.Compilers
                 throw new ArgumentNullException();
 
             options = tokenOptions;
-            this.rootPath = rootPath;
-            this.outputFile = outputFile;
-            this.outputPath = outputPath;
             this.stdLibPath = stdlibPath;
 
             assemblyCode = new List<string>();
             byteCode = new List<byte>();
-            assemblyCodeFile = new List<string>();
-
-            tokens = new DebugInfoCollection();
+            errors = new List<string>();
+            warnings = new List<string>();  
 
             tokenIndex = -1;
 
             preprocessorOptions = flags;
 
-            code = new RawCode(files);
+            code = new SourceFileCollection(files, tokenOptions);
+
+            Precompile();
 
             RunCompiler();
         }
@@ -94,23 +91,44 @@ namespace KScript.Compilers
         {
             Preprocess();
 
-            tokenizer = new Tokenizer(code.Text, options);
             Compile();
 
             Postprocess();
 
             Assemble asm = new Assemble(assemblyCode.ToArray(), "output");
-            byteCode.AddRange(asm.Result);
+
+            if (asm.Errors.Length > 0)
+            {
+                for (int i = 0; i < asm.Errors.Length; i++)
+                {
+                    Error("ASM: " + asm.Errors[i]);
+                }
+            }
+            if (asm.Warnings.Length > 0)
+            {
+                for (int i = 0; i < asm.Errors.Length; i++)
+                {
+                    Error("ASM: " + asm.Errors[i]);
+                }
+            }
+
+            if (asm.Errors.Length == 0)
+                byteCode.AddRange(asm.Result);
         }
 
         protected bool GetNextToken()
         {
             tokenIndex++;
-            if (tokenIndex >= tokens.Count)
+            if (tokenIndex >= code.Tokens.Length)
                 tokenIndex = -1;
 
             return tokenIndex >= 0;
         }
+
+        /// <summary>
+        /// Perform this step before any preprocessing begins. Sets up the compiler environment.
+        /// </summary>
+        protected abstract void Precompile();
 
         protected abstract void Preprocess();
 
@@ -118,25 +136,32 @@ namespace KScript.Compilers
 
         protected abstract void Postprocess();
 
+
         protected void IncludeFile(string filePath, bool libraryFile, int index = 0)
         {
-            FileInfo file = new FileInfo((libraryFile ? stdLibPath.FullName : rootPath.FullName) +
-                ((libraryFile ? stdLibPath.FullName : rootPath.FullName).EndsWith("\\") ? filePath : "\\" + filePath));
+            FileInfo file = new FileInfo((libraryFile ? stdLibPath.FullName : Directory.GetCurrentDirectory()) +
+                ((libraryFile ? stdLibPath.FullName : Directory.GetCurrentDirectory()).EndsWith("\\") ? filePath : "\\" + filePath));
 
             if (preprocessorOptions == PreprocessorOptions.IncludeAppend)
             {
-                if (!code.AddFile(file))
+                try
                 {
-                    errors.AddRange(code.Errors);
-                    code.ClearErrors();
+                    code.AddFile(file, options);
+                }
+                catch (FileNotFoundException)
+                {
+                    errors.Add(string.Format("File \"{0}\" not found.", file.FullName));
                 }
             }
             else
             {
-                if (!code.InsertFile(file, index))
+                try
                 {
-                    errors.AddRange(code.Errors);
-                    code.ClearErrors();
+                    code.InsertFile(file, index, options);
+                }
+                catch (FileNotFoundException)
+                {
+                    errors.Add(string.Format("File \"{0}\" not found.", file.FullName));
                 }
             }
         }

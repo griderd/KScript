@@ -48,13 +48,17 @@
   <ItemGroup>
     <Compile Include="Assembler\Assemble.cs" />
     <Compile Include="Assembler\SmartAssembler.cs" />
+    <Compile Include="Compilers\IL\ILSugar.cs" />
+    <Compile Include="Compilers\SourceFileCollection.cs" />
+    <Compile Include="Compilers\Token.cs" />
+    <Compile Include="Compilers\SourceFile.cs" />
     <Compile Include="Compilers\Compiler.cs" />
     <Compile Include="Compilers\C\CCompiler.cs" />
-    <Compile Include="Compilers\DebugInfo.cs" />
     <Compile Include="Compilers\IL\ILCompiler.cs" />
+    <Compile Include="Compilers\IL\ILExpressions.cs" />
+    <Compile Include="Compilers\IL\ILSymbols.cs" />
     <Compile Include="Compilers\LanguageObjects\Function.cs" />
-    <Compile Include="Compilers\RawCode.cs" />
-    <Compile Include="Compilers\Tokenizer.cs" />
+    <Compile Include="Compilers\TokenizerOptions.cs" />
     <Compile Include="Exceptions\DeviceNotSupportedException.cs" />
     <Compile Include="Hardware\ALU.cs">
       <SubType>Code</SubType>

@@ -157,6 +157,10 @@ namespace KScript.Assembler
                 bool isInstruction = true;
                 switch (CurrentToken)
                 {
+                    case "inr":
+                    case "outr":
+                        break;
+
                     case "cpuid":
                     case "pushi":
                     case "outp":
@@ -547,9 +551,14 @@ namespace KScript.Assembler
             }
         }
 
+        /// <summary>
+        /// Parses a variable declaration, then adds the result to the data segment, and creates a symbol record.
+        /// </summary>
+        /// <param name="signed">Determines if the variable is signed, unsigned, or uses its default sign.</param>
         private void AddVariable(VariableSign signed)
         {
             string type = CurrentToken;
+            string symbol = "";
             
             if (!dataTypes.ContainsKey(type))
             {
@@ -571,10 +580,41 @@ namespace KScript.Assembler
                 return;
             }
 
+            symbol = CurrentToken;
+
             if (CurrentToken == "array")
+            {
                 AddArray(type, length, signed);
+                return;
+            }
+            else if (!IsValidSymbolName(symbol))
+            {
+                Error("Symbol name invalid. Must start with a letter or underscore and must contain only letters, numbers, and underscores.");
+                return;
+            }
+            else
+            {
+                AddSymbolPointer(symbol);
+            }
+
+            if (!GetNextToken())
+            {
+                Error(string.Format("Variable {0} value not set. Initializing to zero.", symbol));
+                return;
+            }
+            else
+            {
+                dataSegment.AddRange(GetElement(type, signed));
+            }
+
         }
 
+        /// <summary>
+        /// Parses an array from a variable declaration, adds it to the data segment, and adds a symbol.
+        /// </summary>
+        /// <param name="type">Type of array.</param>
+        /// <param name="typeSize">Size of the type.</param>
+        /// <param name="signed">Determines whether the type should be signed, unsigned, or use its default sign.</param>
         private void AddArray(string type, int typeSize, VariableSign signed)
         {
             int elementCount = 0;
@@ -598,7 +638,7 @@ namespace KScript.Assembler
 
             if (!IsValidSymbolName())
             {
-                Error("Symbol name invalid. Must start with a letter or underscore and must contain letters, numbers, and underscores.");
+                Error("Symbol name invalid. Must start with a letter or underscore and must only contain letters, numbers, and underscores.");
                 return;
             }
             else

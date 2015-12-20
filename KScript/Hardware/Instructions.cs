@@ -17,6 +17,8 @@ namespace KScript.Hardware
         regh,
         rege,
         regf,
+        #endregion
+        #region Reserved
         res1,
         res2,
         res3,
@@ -26,6 +28,7 @@ namespace KScript.Hardware
         res7,
         res8,
         #endregion
+
         #region ALU instructions
         /// <summary>
         /// Pushes a value onto the ALU stack: pushi [literal]
@@ -166,9 +169,17 @@ namespace KScript.Hardware
         /// </summary>
         outp,
         /// <summary>
+        /// Outputs the content of register A to the port in register B: outr
+        /// </summary>
+        outr,
+        /// <summary>
         /// Inputs the value at the provided port to register A: inp [portID]
         /// </summary>
         inp,
+        /// <summary>
+        /// Inputs the value at the port in register B to register A: inr
+        /// </summary>
+        inr,
         /// <summary>
         /// Writes a literal into a register: mov [register] [literal]
         /// </summary>

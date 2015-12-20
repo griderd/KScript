@@ -8,9 +8,18 @@ using MicroLibrary;
 
 namespace KScript.Hardware
 {
+    /// <summary>
+    /// Represents modes that the CPU can run in.
+    /// </summary>
     public enum CPUMode
     {
+        /// <summary>
+        /// Debug mode forces the CPU to step manually.
+        /// </summary>
         Debug,
+        /// <summary>
+        /// Real mode forces the CPU to perform in real-time.
+        /// </summary>
         Real
     }
 
@@ -157,6 +166,7 @@ namespace KScript.Hardware
         {
             memory = (RAM)systemBoard[IOPorts.RAM];
             programCounter = 0;
+            callStack.Clear();
             //runThread = new Thread(new ThreadStart(Run));
             //if (Mode != CPUMode.Debug) runThread.Start();
             if (Mode != CPUMode.Debug) clock.Start();
@@ -165,6 +175,7 @@ namespace KScript.Hardware
         protected override void _Stop()
         {
             clock.Stop();
+            callStack.Clear();
         }
 
         private int GetRegisterId(Instructions register)
@@ -244,6 +255,11 @@ namespace KScript.Hardware
             instruction = (Instructions)instructionByte;
             switch (instruction)
             {
+                case Instructions.outr:
+                case Instructions.inr:
+                    argCount = 0;
+                    break;
+
                 case Instructions.jfalse:
                 case Instructions.jmp:
                 case Instructions.jtrue:
@@ -439,8 +455,16 @@ namespace KScript.Hardware
                     systemBoard[arg1].WriteToPort(this[Instructions.rega]);
                     break;
 
+                case Instructions.outr:
+                    systemBoard[this[Instructions.regb]].WriteToPort(this[Instructions.rega]);
+                    break;
+
                 case Instructions.inp:
                     this[Instructions.rega] = systemBoard[arg1].OutPort;
+                    break;
+
+                case Instructions.inr:
+                    this[Instructions.rega] = systemBoard[this[Instructions.regb]].OutPort;
                     break;
 
                 case Instructions.mov:
