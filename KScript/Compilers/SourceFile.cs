@@ -56,35 +56,36 @@ namespace KScript.Compilers
             List<Token> tokens = new List<Token>();
             StringBuilder sb = new StringBuilder();
 
-            Action AddToken = delegate() 
+            Action<bool> AddToken = new Action<bool>(eol =>
             {
                 if (sb.Length == 0) return;
-                tokens.Add(new Token(sb.ToString(), lineIndex, FileName));
+                tokens.Add(new Token(sb.ToString(), eol, lineIndex, FileName));
                 sb.Clear();
-            };
+            });
 
             string line = Lines[lineIndex];
 
             for (int i = 0; i < line.Length; i++)
             {
                 char c = line[i];
+                bool eol = i + 1 == line.Length;
                 
                 if ((char.IsWhiteSpace(c)) & (options.EndTokenOnWhitespace))
                 {
-                    AddToken();
+                    AddToken(eol);
                     continue;
                 }
                 else if ((sb.Length > 0) && (options.MultiCharTokens.Contains(sb.ToString() + c)))
                 {
                     sb.Append(c);
-                    AddToken();
+                    AddToken(eol);
                     continue;
                 }
                 else if (options.SingleCharTokens.Contains(c))
                 {
-                    AddToken();
+                    AddToken(false);
                     sb.Append(c);
-                    AddToken();
+                    AddToken(eol);
                     continue;
                 }
 
@@ -92,13 +93,13 @@ namespace KScript.Compilers
 
                 if (options.MultiCharTokens.Contains(sb.ToString()))
                 {
-                    AddToken();
+                    AddToken(eol);
                     continue;
                 }
             }
 
             if (sb.Length > 0)
-                AddToken();
+                AddToken(true);
 
             return tokens.ToArray();
         }

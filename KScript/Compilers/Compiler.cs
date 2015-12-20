@@ -49,7 +49,7 @@ namespace KScript.Compilers
                 else if (code.Tokens.Length > 0)
                     return code.Tokens.Last();
                 else
-                    return new Token("", 0, "Unknown");
+                    return new Token("", true, 0, "Unknown");
             } 
         }
 

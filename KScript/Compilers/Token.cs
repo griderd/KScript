@@ -13,6 +13,11 @@ namespace KScript.Compilers
         public string Value { get; private set; }
 
         /// <summary>
+        /// Gets a value determining if the token is at the end of a line.
+        /// </summary>
+        public bool EOL { get; private set; }
+
+        /// <summary>
         /// Gets the file line number of the token.
         /// </summary>
         public int LineNumber { get { return LineIndex + 1; } }
@@ -27,9 +32,10 @@ namespace KScript.Compilers
         /// </summary>
         public string Filename { get; private set; }
 
-        public Token(string value, int lineIndex, string filename)
+        public Token(string value, bool eol, int lineIndex, string filename)
             : this()
         {
+            EOL = eol;
             Filename = filename;
             LineIndex = lineIndex;
             Value = value;
